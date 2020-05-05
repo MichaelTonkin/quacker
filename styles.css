@@ -1,0 +1,67 @@
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+<style>
+/*
+Mobile
+*/
+
+body
+{
+	font-size:20px;
+}
+.btn
+{
+	background-color:0AEBA0;
+	/*background-color:red;*/
+}
+#btn-tweet
+{
+	margin:1% 5%;
+	float:right;
+}
+#msg-box
+{
+	margin-top:1em;
+	width:100%;
+	height:10em;
+	resize:none;
+}
+.msg-id-display
+{
+	border:100px;
+}
+.msg-body
+{
+	display:block;
+}
+.date-container
+{
+	display:block;
+	float:right;
+	text-align:right;
+}
+.profile-img
+{
+	border-radius: 100%;
+	width:4em;
+}
+.uid-container
+{
+	font-weight:bold;
+	margin-left:0;
+	padding:0;
+}
+.msg-body
+{
+	margin-top:5%;
+}
+/* Desktops and laptops ----------- */
+@media only screen 
+and (min-width : 1224px) {
+	body
+	{
+		margin: 0 20% 0 20%;
+	}
+}
+</style>
