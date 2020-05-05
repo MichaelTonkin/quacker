@@ -6,6 +6,7 @@
 <?php
 
 include "styles.css";
+//include "newuser.php";
 
 echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
 
@@ -34,47 +35,94 @@ function getSingle($query)
 	return $row[0];
 }
 
-//handle first time login
-if()
-
-//handle input when user hits 'quack' button
-if(isset($_REQUEST['quack'])) 
+//generates a popup for account creation
+function popupLogin()
 {
-	$quack = $_REQUEST['quack'];
-	$ip = mysqli_real_escape_string($connect, $_SERVER['REMOTE_ADDR']);
-	$uid = getSingle("select uid from twitUsers where ip = '".$ip."'");
-	
-	//create user id if it does not exist
-	if(!$uid)
+	echo '
+	<div id="loginContainer">
+	<p>Please enter a username. This will be displayed on all of your messages and cannot be changed.</p>
+	<form action="newuser.php" method="post">
+	<input type="text" name="username" />
+	<input type="submit" value="Submit" />
+	</form>
+	</div>
+	';
+}
+
+function getUserIpAddr(){
+    if(!empty($_SERVER['HTTP_CLIENT_IP'])){
+        //ip from share internet
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    }elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
+        //ip pass from proxy
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    }else{
+        $ip = $_SERVER['REMOTE_ADDR'];
+    }
+    return $ip;
+}
+
+
+function mainPage()
+{
+	//handle input when user hits 'quack' button
+	if(isset($_REQUEST['quack'])) 
 	{
-		query("insert into twitUsers(ip) values ('$ip')");
+		$quack = $_REQUEST['quack'];
+		$ip = getUserIpAddr();
+		$uid = getSingle("select uid from twitUsers where ip = '".$ip."'");
+		$username = getSingle("select username from twitUsers where ip = '".$ip."'");
+		
+		//create user id if it does not exist
+		/*if(!$uid)
+		{
+			query("insert into twitUsers(ip) values ('$ip')");
+		}
+		*/
+		$date = Date("Y-m-d H:i:s");
+		query("insert into twitTweets(uid, post, date, username) values ('$uid', '$quack', '$date', '$username')");
 	}
-	$date = Date("Y-m-d H:i:s");
-	query("insert into twitTweets(uid, post, date) values ('$uid', '$quack', '$date')");
+
+	//this is the quack input field (for users making quacks).
+	echo '
+	<form class="form-group" method="POST" action="index.php">
+	<textarea type="text" name="quack" class="form-control-plaintext form-control-lg" id="msg-box" placeholder="What\'s on your mind?" maxlength="140"></textarea>
+	<input type=submit value="Quack" class="btn" id="btn-tweet">
+	</form>
+	';
+
+	$result = query("select * from twitTweets order by date desc");
+	echo "<table class='table table-hover'>";
+	while ($row = mysqli_fetch_assoc($result)) 
+	{
+		$uid = $row['uid'];
+		$post = htmlspecialchars($row['post']);
+		$date = $row['date'];
+		echo "
+		<tr class='msg-id-display'>
+		<td> <img src='img/default-profile.png' class='profile-img'></td> <td class='uid-container'><span>$username</span> </td>
+		<td> <span class='msg-body'>$post</span> </td>
+		<td> <span class='date-container'>$date</span> </td>
+		</tr>
+		";
+	}
+	echo "</table>";
 }
 
-//this is the quack input field (for users making quacks).
-echo '
-<form class="form-group" method="POST" action=index.php>
-<textarea type="text" name="quack" class="form-control-plaintext form-control-lg" id="msg-box" placeholder="What\'s on your mind?" maxlength="140"></textarea>
-<input type=submit value="Quack" class="btn" id="btn-tweet">
-</form>
-';
+//------------------
+//driver code
+//-----------------
 
-$result = query("select * from twitTweets order by date desc");
-echo "<table class='table table-hover'>";
-while ($row = mysqli_fetch_assoc($result)) 
+//handle first time login
+$ip = getUserIpAddr();
+$uid = getSingle("select uid from twitUsers where ip = '".$ip."'"); //check if user already exists in our db
+if(!$uid)
 {
-	$uid = $row['uid'];
-	$post = htmlspecialchars($row['post']);
-	$date = $row['date'];
-	echo "
-	<tr class='msg-id-display'>
-	<td> <img src='img/default-profile.png' class='profile-img'></td> <td class='uid-container'><span>$uid</span> </td>
-	<td> <span class='msg-body'>$post</span> </td>
-	<td> <span class='date-container'>$date</span> </td>
-	</tr>
-	";
+	popupLogin();
 }
-echo "</table>";
+else
+{
+	mainPage();
+}
+
 ?>
