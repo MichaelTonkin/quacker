@@ -1,3 +1,10 @@
+<!--
+File: index.php
+Description: Contains the messaging page and login page logic and ui.
+Warning: Git reporsitory does not include connection variables for security purposes.
+Author: Michael Tonkin.
+-->
+
 <script
   src="https://code.jquery.com/jquery-3.4.1.min.js"
   integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
@@ -6,37 +13,19 @@
 <?php
 
 include "styles.css";
-//include "newuser.php";
+include "connect.php";
+include "helper.php";
 
 echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
-
-$dbhost = "185.224.138.28";
-$dbuser = "u181092848_admin";
-$dbpass = "AppendixB";
-$dbname = "u181092848_forum";
 
 //connect to db
 $connect = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
 
-//helper function to quickly make a query
-function query($query) 
-{
-	global $connect;
-	$result = mysqli_query($connect, $query);
-	return $result;
-	
-}
-
-//issues a query and returns a single value
-function getSingle($query)
-{
-	$result = query($query);
-	$row = mysqli_fetch_row($result);
-	return $row[0];
-}
-
-//generates a popup for account creation
-function popupLogin()
+/*
+Funciton: login
+Description: presents the user with a login screen. Upon clicking "submit", the user's ip and chosen username will be stored in the database for later use.
+*/
+function login()
 {
 	echo '
 	<div id="loginContainer">
@@ -49,36 +38,38 @@ function popupLogin()
 	';
 }
 
-function getUserIpAddr(){
-    if(!empty($_SERVER['HTTP_CLIENT_IP'])){
-        //ip from share internet
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    }elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
-        //ip pass from proxy
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-    }else{
-        $ip = $_SERVER['REMOTE_ADDR'];
-    }
-    return $ip;
+/*
+Function: hideLogin
+Description: hides the login screen. Should only be used once after user has logged in.
+*/
+function hideLogin()
+{
+	echo'
+	<style>
+	#loginContainer
+	{
+		display:hidden;
+	}
+	</style>
+	';
 }
 
-
+/*
+Function: mainPage
+Description: Provides ui and logic for messaging service.
+*/
 function mainPage()
 {
+
+	$ip = getUserIpAddr();
+	$username = getSingle("select username from twitUsers where ip = '".$ip."'");
+
 	//handle input when user hits 'quack' button
 	if(isset($_REQUEST['quack'])) 
 	{
 		$quack = $_REQUEST['quack'];
-		$ip = getUserIpAddr();
 		$uid = getSingle("select uid from twitUsers where ip = '".$ip."'");
-		$username = getSingle("select username from twitUsers where ip = '".$ip."'");
-		
-		//create user id if it does not exist
-		/*if(!$uid)
-		{
-			query("insert into twitUsers(ip) values ('$ip')");
-		}
-		*/
+
 		$date = Date("Y-m-d H:i:s");
 		query("insert into twitTweets(uid, post, date, username) values ('$uid', '$quack', '$date', '$username')");
 	}
@@ -91,6 +82,7 @@ function mainPage()
 	</form>
 	';
 
+	//here we iterate through each message in the database and create a table row for presenting to the user.
 	$result = query("select * from twitTweets order by date desc");
 	echo "<table class='table table-hover'>";
 	while ($row = mysqli_fetch_assoc($result)) 
@@ -113,14 +105,15 @@ function mainPage()
 //driver code
 //-----------------
 
-//handle first time login
 $ip = getUserIpAddr();
 $uid = getSingle("select uid from twitUsers where ip = '".$ip."'"); //check if user already exists in our db
+
+//if the user has not connected before then allow them to create an account
 if(!$uid)
 {
-	popupLogin();
+	login();
 }
-else
+else //otherwise go to the mainpage
 {
 	mainPage();
 }
