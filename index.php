@@ -16,6 +16,8 @@ include "styles.css";
 include "connect.php";
 include "helper.php";
 
+$uid = "";
+
 echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
 
 //connect to db
@@ -44,11 +46,14 @@ Description: hides the login screen. Should only be used once after user has log
 */
 function hideLogin()
 {
+	global $uid;
+	global $ip;
+	$uid = getSingle("select uid from twitUsers where ip = '".$ip."'"); 
 	echo'
 	<style>
 	#loginContainer
 	{
-		display:hidden;
+		visibility:hidden;
 	}
 	</style>
 	';
@@ -109,7 +114,7 @@ $ip = getUserIpAddr();
 $uid = getSingle("select uid from twitUsers where ip = '".$ip."'"); //check if user already exists in our db
 
 //if the user has not connected before then allow them to create an account
-if(!$uid)
+if($uid == "")
 {
 	login();
 }
